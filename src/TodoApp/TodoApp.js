@@ -6,7 +6,9 @@ class TodoApp extends React.Component {
     state = {
         tasks: [],
         text: "",
-        isDeleted: false
+        isDeleted: false,
+        line: false,
+        checked: false,
     };
 
     setText = e => {
@@ -15,22 +17,24 @@ class TodoApp extends React.Component {
 
     uploadTask = e => {
         e.preventDefault();
-        if(this.state.text !== "") {
+        if (this.state.text !== "") {
             const newTodoArrey = {
-            text: this.state.text,
-            isDeleted: this.state.isDeleted
-        }
-        const newTodo = [
-            ...this.state.tasks,
-            newTodoArrey
-        ]
-        this.setState({ tasks: newTodo, text: ""},
-            () => {
-                localStorage.setItem(
-                    "todoApp",
-                    JSON.stringify(this.state.tasks)
-                );
-            })
+                text: this.state.text,
+                isDeleted: this.state.isDeleted,
+                line: this.state.line,
+                checked: this.state.checked
+            }
+            const newTodo = [
+                ...this.state.tasks,
+                newTodoArrey
+            ]
+            this.setState({ tasks: newTodo, text: "" },
+                () => {
+                    localStorage.setItem(
+                        "todoApp",
+                        JSON.stringify(this.state.tasks)
+                    );
+                })
         }
     }
     handleDelete = (task) => {
@@ -42,15 +46,28 @@ class TodoApp extends React.Component {
         // })
 
         this.state.tasks.map(val => {
-            if(val.text === task.text) {
+            if (val.text === task.text) {
                 val.isDeleted = true;
-                
-                localStorage.setItem("todoApp", JSON.stringify(this.state.tasks))    
+                localStorage.setItem("todoApp", JSON.stringify(this.state.tasks))
             }
         })
 
-        this.setState({...this.state.tasks})
-        
+        this.setState({ ...this.state.tasks })
+
+    }
+    handleChecked = (task) => {
+        // console.log("Funciona")
+        this.state.tasks.map(val => {
+            if (val.text === task.text) {
+
+                val.line = !val.line;
+                val.checked = !val.checked
+                localStorage.setItem("todoApp", JSON.stringify(this.state.tasks))
+            }
+        })
+
+        this.setState({ ...this.state.tasks })
+
     }
 
     componentDidMount() {
@@ -65,17 +82,22 @@ class TodoApp extends React.Component {
 
     renderTask = () => {
         if (this.state.tasks.length > 0) {
-          return this.state.tasks.map((element, key) => {
-              if(!element.isDeleted) {
-                return <TextField 
-                key={key}
-                commentary={element.text} 
-                handleDelete={() => this.handleDelete(element)}
-                hideClass={{display: !element.isDeleted ? "flex" : "none"}}/>
-              }
-          })  
+            return this.state.tasks.map((element, key) => {
+                if (!element.isDeleted) {
+                    return <TextField
+                        key={key}
+                        commentary={element.text}
+                        handleDelete={() => this.handleDelete(element)}
+                        hideClass={{ display: !element.isDeleted ? "flex" : "none" }}
+                        checked={element.checked}
+                        handleChecked={() => this.handleChecked(element)}
+                        style={
+                            { textDecoration: element.line ? "line-through" : "none" }
+                        } />
+                }
+            })
         }
-        
+
     }
 
     render() {
@@ -84,9 +106,9 @@ class TodoApp extends React.Component {
                 <Form onSubmit={this.uploadTask}
                     textValue={this.state.text}
                     onChangeText={this.setText} />
-            
-                    {this.renderTask()}
-                </div>
+
+                {this.renderTask()}
+            </div>
         )
     }
 }
